@@ -3,10 +3,10 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-import crud
-import models
-import schemas
-import auth
+from . import crud
+from . import models
+from . import schemas
+from . import auth
 from .database import SessionLocal, engine, get_db
 from .config import settings
 from datetime import timedelta
