@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: wb_calculator_db
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432" # Для локального доступа, при деплое не нужно
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql://user:password@db:5432/wb_calculator_db
+      - SECRET_KEY=your-super-secret-jwt-signing-key-change-it-in-production
+    depends_on:
+      - db
+    # volumes: # Опционально: для разработки, чтобы изменения в коде отражались в контейнере
+    #   - ./backend:/app
+
+volumes:
+  postgres_data:
