@@ -30,8 +30,18 @@ COPY --from=builder /app/requirements.txt .
 # Install Python packages
 RUN pip install --no-cache /wheels/*
 
-# Copy application code
-COPY backend/ .
+# Create Python package structure
+RUN mkdir -p /app/wb_calculator
+
+# Copy application code into package
+COPY backend/ /app/wb_calculator/
+
+# Create entrypoint script
+RUN echo '#!/bin/sh\n\
+cd /app\n\
+export PYTHONPATH=/app\n\
+exec uvicorn wb_calculator.main:app --host 0.0.0.0 --port 8000\n'\
+> /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Create non-root user
 RUN adduser --disabled-password --gecos '' appuser
@@ -46,4 +56,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/health || exit 1
 
 # Run application
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["/app/entrypoint.sh"]
