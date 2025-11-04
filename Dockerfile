@@ -11,11 +11,12 @@ COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Копируем остальные файлы бэкенда (включая main.py)
+# Это копирует *содержимое* папки backend в /app
 COPY backend/ .
 
 # Открываем порт, который будет использовать приложение
 EXPOSE 8000
 
 # Команда для запуска приложения
-# Теперь main.py находится в корне WORKDIR, поэтому указываем просто main:app
+# main.py находится в /app, поэтому указываем просто main:app
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
