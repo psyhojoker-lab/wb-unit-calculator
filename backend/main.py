@@ -1,18 +1,28 @@
 # backend/main.py
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import crud
 import models
 import schemas
 import auth
-from .database import SessionLocal, engine, get_db # Импортируем get_db из database
+from .database import SessionLocal, engine, get_db
 from .config import settings
 from datetime import timedelta
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI()
+app = FastAPI(title="WB Unit Calculator API")
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Зависимость для получения сессии БД - УБРАЛИ отсюда, теперь в database.py
 # def get_db():
@@ -53,6 +63,11 @@ def create_calculation(calculation: schemas.CalculationCreate, db: Session = Dep
     return crud.create_calculation(db=db, calculation=calculation, user_id=current_user.id)
 
 @app.get("/calculations/", response_model=list[schemas.Calculation])
-def read_calculations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: schemas.User = Depends(auth.get_current_user)): # Используем get_db из database
+def read_calculations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: schemas.User = Depends(auth.get_current_user)):
     calculations = crud.get_calculations(db, skip=skip, limit=limit)
     return calculations
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for monitoring"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
