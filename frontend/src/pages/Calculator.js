@@ -55,9 +55,11 @@ const Calculator = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    // Remove leading zeros and convert to number
+    const cleanValue = value.replace(/^0+/, '') || '0';
     setInputs(prev => ({
       ...prev,
-      [name]: parseFloat(value) || 0
+      [name]: parseFloat(cleanValue) || 0
     }));
   };
 
@@ -122,19 +124,19 @@ const Calculator = () => {
 
   const handleResetClick = () => {
     setInputs({
-      purchase: 835,
-      profit: 230,
-      len: 30,
-      wid: 28,
-      hei: 9,
-      commission: 25,
-      acquiring: 3,
-      tax: 8,
-      adsPct: 10,
-      logiCoeff: 400,
-      returnCost: 50,
-      buyout: 90,
-      storage: 12,
+      purchase: 0,
+      profit: 0,
+      len: 0,
+      wid: 0,
+      hei: 0,
+      commission: 0,
+      acquiring: 0,
+      tax: 0,
+      adsPct: 0,
+      logiCoeff: 0,
+      returnCost: 0,
+      buyout: 0,
+      storage: 0,
     });
     setResults({
       volume: "—",
