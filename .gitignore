@@ -67,3 +67,7 @@ build/
 
 # React
 build/
+
+# Ignore Python egg-info directories created by editable installs
+*.egg-info/
+backend/*.egg-info/
