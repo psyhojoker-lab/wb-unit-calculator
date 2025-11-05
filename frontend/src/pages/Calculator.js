@@ -55,12 +55,14 @@ const Calculator = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    // Remove leading zeros and convert to number
-    const cleanValue = value.replace(/^0+/, '') || '0';
+    // Convert to number first to handle values like "010"
+    const numericValue = Number(value);
     setInputs(prev => ({
       ...prev,
-      [name]: parseFloat(cleanValue) || 0
+      [name]: isNaN(numericValue) ? 0 : numericValue
     }));
+    // Update the input display value to remove leading zeros
+    e.target.value = isNaN(numericValue) ? "0" : String(numericValue);
   };
 
   const performCalculation = () => {
