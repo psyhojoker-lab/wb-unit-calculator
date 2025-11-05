@@ -9,6 +9,8 @@ from .config import settings
 from datetime import timedelta, datetime
 from .calculator import perform_calculation
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -28,6 +30,25 @@ app.add_middleware(
 )
 
 # Зависимость для получения сессии БД - УБРАЛИ отсюда, теперь в database.py
+
+@app.get("/{full_path:path}", include_in_schema=False)
+async def spa_fallback(full_path: str):
+    """Serve React's index.html for any non-API GET request (SPA fallback).
+
+    Tries the production build path (/app/frontend/build/index.html) first
+    then falls back to the local frontend build relative path for local testing.
+    """
+    prod_index = "/app/frontend/build/index.html"
+    if os.path.exists(prod_index):
+        return FileResponse(prod_index, media_type="text/html")
+
+    # Local dev path (when running backend locally and built frontend in repo)
+    local_index = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "build", "index.html"))
+    if os.path.exists(local_index):
+        return FileResponse(local_index, media_type="text/html")
+
+    # Nothing found — return 404 so API clients still get proper response
+    raise HTTPException(status_code=404, detail="Not Found")
 # def get_db():
 #     db = SessionLocal()
 #     try:
