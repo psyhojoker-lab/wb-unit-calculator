@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.11-slim as builder
+FROM python:3.11-slim AS builder
 
 WORKDIR /app
 
@@ -8,6 +8,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
 # Install Python dependencies
 COPY backend/requirements.txt .
@@ -23,11 +27,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy wheels from builder
+# Create virtual environment and copy from builder
+RUN python -m venv /opt/venv
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy wheels and install in virtual environment
 COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
-
-# Install Python packages
 RUN pip install --no-cache /wheels/*
 
 # Create Python package structure
