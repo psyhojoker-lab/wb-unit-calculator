@@ -45,9 +45,9 @@ COPY backend/ /app/wb_calculator/
 
 # Create entrypoint script
 RUN echo '#!/bin/sh\n\
-cd /app\n\
+cd /app/wb_calculator\n\
 export PYTHONPATH=/app\n\
-exec uvicorn wb_calculator.main:app --host 0.0.0.0 --port 8000\n'\
+exec uvicorn main:app --host 0.0.0.0 --port 8000\n'\
 > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Create non-root user
