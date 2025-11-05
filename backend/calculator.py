@@ -1,4 +1,4 @@
-from wb_calculator import schemas
+from . import schemas
 
 def calc_logistics(volume: float, coeff: float) -> float:
     """Calculate logistics cost based on volume and coefficient."""

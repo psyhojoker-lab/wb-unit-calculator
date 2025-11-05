@@ -3,10 +3,10 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from wb_calculator import crud, models, schemas, auth
-from wb_calculator.database import SessionLocal, engine, get_db
-from wb_calculator.config import settings
-from datetime import timedelta
+from . import crud, models, schemas, auth
+from .database import SessionLocal, engine, get_db
+from .config import settings
+from datetime import timedelta, datetime
 from .calculator import perform_calculation
 
 models.Base.metadata.create_all(bind=engine)
@@ -49,13 +49,10 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
-        raise HTTPException(
-            status_code=400,
-            detail="Email already registered"
-        )
+        raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
-@app.post("/calculate/", response_model=schemas.CalculationResult)
+@app.post("/calculate/", response_model=schemas.Calculation)
 async def calculate(
     calculation: schemas.CalculationCreate,
     current_user: models.User = Depends(auth.get_current_user),
@@ -78,7 +75,7 @@ async def calculate(
     except Exception as e:
         raise HTTPException(status_code=500, detail="Calculation error")
 
-@app.get("/history/", response_model=list[schemas.CalculationResult])
+@app.get("/history/", response_model=list[schemas.Calculation])
 async def get_calculation_history(
     skip: int = 0,
     limit: int = 10,
@@ -90,29 +87,26 @@ async def get_calculation_history(
         db, user_id=current_user.id, skip=skip, limit=limit
     )
     return calculations
-
 @app.get("/health")
 async def health_check():
     """Health check endpoint"""
-    from datetime import datetime
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+
 
 @app.get("/users/me", response_model=schemas.User)
-async def read_users_me(current_user: schemas.User = Depends(auth.get_current_user)): # get_current_user теперь получает get_db из auth
+async def read_users_me(current_user: models.User = Depends(auth.get_current_user)):
     return current_user
 
+
 @app.post("/calculations/", response_model=schemas.Calculation)
-def create_calculation(calculation: schemas.CalculationCreate, db: Session = Depends(get_db), current_user: schemas.User = Depends(auth.get_current_user)): # Используем get_db из database
-    return crud.create_calculation(db=db, calculation=calculation, user_id=current_user.id)
+def create_calculation(calculation: schemas.CalculationCreate, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
+    result = perform_calculation(calculation)
+    # combine provided calculation and result fields for storage
+    record = {**calculation.dict(), **result}
+    return crud.create_calculation(db=db, calculation=record, user_id=current_user.id)
+
 
 @app.get("/calculations/", response_model=list[schemas.Calculation])
-def read_calculations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: schemas.User = Depends(auth.get_current_user)):
+def read_calculations(skip: int = 0, limit: int = 100, db: Session = Depends(get_db), current_user: models.User = Depends(auth.get_current_user)):
     calculations = crud.get_calculations(db, skip=skip, limit=limit)
     return calculations
-
-@app.get("/health")
-async def health_check():
-    """Health check endpoint for monitoring"""
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
