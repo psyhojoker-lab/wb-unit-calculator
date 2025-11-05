@@ -3,12 +3,9 @@ from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from . import crud
-from . import models
-from . import schemas
-from . import auth
-from .database import SessionLocal, engine, get_db
-from .config import settings
+from wb_calculator import crud, models, schemas, auth
+from wb_calculator.database import SessionLocal, engine, get_db
+from wb_calculator.config import settings
 from datetime import timedelta
 
 models.Base.metadata.create_all(bind=engine)

@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-import models
-import schemas
+from wb_calculator import models, schemas
 from passlib.context import CryptContext
 from datetime import datetime
 
