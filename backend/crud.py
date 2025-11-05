@@ -25,9 +25,17 @@ def create_user(db: Session, user: schemas.UserCreate):
 def get_calculations(db: Session, skip: int = 0, limit: int = 100):
     return db.query(models.Calculation).offset(skip).limit(limit).all()
 
-def create_calculation(db: Session, calculation: schemas.CalculationCreate, user_id: int):
-    db_calculation = models.Calculation(**calculation.dict(), owner_id=user_id)
+def create_calculation(db: Session, calculation: dict, user_id: int):
+    db_calculation = models.Calculation(**calculation, owner_id=user_id)
     db.add(db_calculation)
     db.commit()
     db.refresh(db_calculation)
     return db_calculation
+
+def get_user_calculations(db: Session, user_id: int, skip: int = 0, limit: int = 10):
+    return db.query(models.Calculation)\
+        .filter(models.Calculation.owner_id == user_id)\
+        .order_by(models.Calculation.created_at.desc())\
+        .offset(skip)\
+        .limit(limit)\
+        .all()

@@ -7,6 +7,7 @@ from wb_calculator import crud, models, schemas, auth
 from wb_calculator.database import SessionLocal, engine, get_db
 from wb_calculator.config import settings
 from datetime import timedelta
+from .calculator import perform_calculation
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -45,9 +46,56 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
     return {"access_token": access_token, "token_type": "bearer"}
 
 @app.post("/users/", response_model=schemas.User)
-def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)): # Используем get_db из database
+def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
+        raise HTTPException(
+            status_code=400,
+            detail="Email already registered"
+        )
+    return crud.create_user(db=db, user=user)
+
+@app.post("/calculate/", response_model=schemas.CalculationResult)
+async def calculate(
+    calculation: schemas.CalculationCreate,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Calculate unit economics and save results"""
+    try:
+        # Perform calculation
+        result = perform_calculation(calculation)
+        
+        # Create calculation record
+        db_calculation = crud.create_calculation(
+            db=db,
+            calculation={**calculation.dict(), **result},
+            user_id=current_user.id
+        )
+        return db_calculation
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Calculation error")
+
+@app.get("/history/", response_model=list[schemas.CalculationResult])
+async def get_calculation_history(
+    skip: int = 0,
+    limit: int = 10,
+    current_user: models.User = Depends(auth.get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Get user's calculation history"""
+    calculations = crud.get_user_calculations(
+        db, user_id=current_user.id, skip=skip, limit=limit
+    )
+    return calculations
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    from datetime import datetime
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
         raise HTTPException(status_code=400, detail="Email already registered")
     return crud.create_user(db=db, user=user)
 
