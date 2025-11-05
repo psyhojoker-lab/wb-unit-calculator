@@ -4,10 +4,11 @@ FROM python:3.11-slim AS builder
 WORKDIR /app
 
 # Install build dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     build-essential \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man
 
 # Create virtual environment
 RUN python -m venv /opt/venv
@@ -45,9 +46,9 @@ COPY backend/ /app/wb_calculator/
 
 # Create entrypoint script
 RUN echo '#!/bin/sh\n\
-cd /app/wb_calculator\n\
+cd /app\n\
 export PYTHONPATH=/app\n\
-exec uvicorn main:app --host 0.0.0.0 --port 8000\n'\
+exec uvicorn wb_calculator.main:app --host 0.0.0.0 --port 8000\n'\
 > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
 
 # Create non-root user
