@@ -1,4 +1,12 @@
-# Build stage
+# Frontend build stage
+FROM node:18-alpine as frontend-build
+WORKDIR /app/frontend
+COPY frontend/package*.json ./
+RUN npm install --legacy-peer-deps
+COPY frontend/ ./
+RUN npm run build
+
+# Python builder stage
 FROM python:3.11-slim AS builder
 
 WORKDIR /app
@@ -18,7 +26,7 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY backend/requirements.txt .
 RUN pip wheel --no-cache-dir --no-deps --wheel-dir /app/wheels -r requirements.txt
 
-# Final stage
+# Final runtime image
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -37,6 +45,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY --from=builder /app/wheels /wheels
 COPY --from=builder /app/requirements.txt .
 RUN pip install --no-cache /wheels/*
+
+# Copy frontend build from frontend-build stage
+COPY --from=frontend-build /app/frontend/build /app/frontend/build
 
 # Create Python package structure
 RUN mkdir -p /app/wb_calculator
