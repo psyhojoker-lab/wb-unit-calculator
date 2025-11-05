@@ -8,10 +8,14 @@ from .database import SessionLocal, engine, get_db
 from .config import settings
 from datetime import timedelta, datetime
 from .calculator import perform_calculation
+from fastapi.staticfiles import StaticFiles
 
 models.Base.metadata.create_all(bind=engine)
 
+
+# Serve frontend static files (React build). Ensure Dockerfile copies frontend/build -> /app/frontend/build
 app = FastAPI(title="WB Unit Calculator API")
+app.mount("/", StaticFiles(directory="../frontend/build", html=True), name="frontend")
 
 # Add CORS middleware
 app.add_middleware(
