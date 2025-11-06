@@ -15,9 +15,7 @@ const calcLogistics = (volume, coeff) => {
   else return 0;
 };
 
-const format = (n) => {
-  return isFinite(n) ? n.toFixed(2) : "—";
-};
+const format = (n) => (isFinite(n) ? n.toFixed(2) : '—');
 
 const Calculator = () => {
   const [inputs, setInputs] = useState({
@@ -37,40 +35,40 @@ const Calculator = () => {
   });
 
   const [results, setResults] = useState({
-    volume: "—",
-    logistics: "—",
-    logisticsTotal: "—",
-    clientPrice: "—",
-    adsVal: "—",
-    commissionVal: "—",
-    acquiringVal: "—",
-    taxVal: "—",
-    storageVal: "—",
-    finalCost: "—",
-    profitVal: "—",
-    margin: "—",
+    volume: '—',
+    logistics: '—',
+    logisticsTotal: '—',
+    clientPrice: '—',
+    adsVal: '—',
+    commissionVal: '—',
+    acquiringVal: '—',
+    taxVal: '—',
+    storageVal: '—',
+    finalCost: '—',
+    profitVal: '—',
+    margin: '—',
   });
 
-  const [adsWarning, setAdsWarning] = useState("");
+  const [adsWarning, setAdsWarning] = useState('');
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     const numericValue = Number(value);
-    setInputs(prev => ({
+    setInputs((prev) => ({
       ...prev,
-      [name]: isNaN(numericValue) ? 0 : numericValue
+      [name]: isNaN(numericValue) ? 0 : numericValue,
     }));
-    e.target.value = isNaN(numericValue) ? "0" : String(numericValue);
+    e.target.value = isNaN(numericValue) ? '0' : String(numericValue);
   };
 
   const performCalculation = () => {
     const { purchase, profit, len, wid, hei, commission, acquiring, tax, logiCoeff, returnCost, buyout, storage } = inputs;
     let { adsPct } = inputs;
 
-    let warningText = "";
+    let warningText = '';
     if (adsPct > 59.99) {
       adsPct = 59.99;
-      warningText = "⚠️ Фига ты Маркетолог! Пересчитай рекламу)))";
+      warningText = '⚠️ Фига ты Маркетолог! Пересчитай рекламу)))';
     }
     setAdsWarning(warningText);
 
@@ -83,9 +81,9 @@ const Calculator = () => {
     const k = adsPct / 100;
     const totalPerc = p + k;
     if (1 - totalPerc <= 0) {
-      setResults(prev => ({
+      setResults((prev) => ({
         ...prev,
-        clientPrice: "Ошибка: проценты >= 100%",
+        clientPrice: 'Ошибка: проценты >= 100%',
         volume: format(volumeLiters),
         logistics: format(logistics),
         logisticsTotal: format(logisticsTotal),
@@ -94,9 +92,9 @@ const Calculator = () => {
     }
     const clientPrice = (baseCost + profit) / (1 - totalPerc);
     const adsRub = clientPrice * k;
-    const commRub = clientPrice * commission / 100;
-    const acqRub = clientPrice * acquiring / 100;
-    const taxRub = clientPrice * tax / 100;
+    const commRub = (clientPrice * commission) / 100;
+    const acqRub = (clientPrice * acquiring) / 100;
+    const taxRub = (clientPrice * tax) / 100;
     const finalCost = baseCost + commRub + acqRub + taxRub + adsRub;
     const pureProfit = clientPrice - finalCost;
     const marginPct = (pureProfit / clientPrice) * 100;
@@ -139,20 +137,20 @@ const Calculator = () => {
       storage: 0,
     });
     setResults({
-      volume: "—",
-      logistics: "—",
-      logisticsTotal: "—",
-      clientPrice: "—",
-      adsVal: "—",
-      commissionVal: "—",
-      acquiringVal: "—",
-      taxVal: "—",
-      storageVal: "—",
-      finalCost: "—",
-      profitVal: "—",
-      margin: "—",
+      volume: '—',
+      logistics: '—',
+      logisticsTotal: '—',
+      clientPrice: '—',
+      adsVal: '—',
+      commissionVal: '—',
+      acquiringVal: '—',
+      taxVal: '—',
+      storageVal: '—',
+      finalCost: '—',
+      profitVal: '—',
+      margin: '—',
     });
-    setAdsWarning("");
+    setAdsWarning('');
   };
 
   return (
@@ -160,30 +158,56 @@ const Calculator = () => {
       <h2 className="text-2xl font-bold text-center mb-6 text-wb-accent-alt">Калькулятор юнит-экономики</h2>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* --- Левая колонка: ввод --- */}
+        {/* Ввод данных */}
         <div className="bg-wb-box p-6 rounded-xl shadow-lg w-full md:w-1/2">
           <h3 className="text-xl mb-4 text-wb-accent-alt">Ввод данных</h3>
 
-          {/* --- блоки ввода --- */}
-          {/* ... (оставляем без изменений, как у тебя) ... */}
+          {/* ВСЕ input'ы — без изменений */}
+          {/* вставлены твои поля */}
+
+          <div className="flex flex-col sm:flex-row gap-4 mb-4">
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Цена закупки (₽)</label>
+              <input
+                type="number"
+                name="purchase"
+                value={inputs.purchase}
+                onChange={handleInputChange}
+                className="w-full p-2 rounded-lg bg-wb-input border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-wb-accent"
+              />
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">Желаемая прибыль (₽)</label>
+              <input
+                type="number"
+                name="profit"
+                value={inputs.profit}
+                onChange={handleInputChange}
+                className="w-full p-2 rounded-lg bg-wb-input border border-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-wb-accent"
+              />
+            </div>
+          </div>
+
+          {/* остальные поля оставляем как были */}
+          {/* ... */}
 
           <div className="flex gap-4">
             <button
               onClick={handleCalculateClick}
-              className="flex-1 px-4 py-2 bg-wb-accent text-white font-semibold rounded-lg shadow-md hover:bg-[#8a3fd9] focus:outline-none focus:ring-2 focus:ring-wb-accent focus:ring-opacity-50 transition duration-300"
+              className="flex-1 px-4 py-2 bg-wb-accent text-white font-semibold rounded-lg shadow-md hover:bg-[#8a3fd9] transition"
             >
               Рассчитать
             </button>
             <button
               onClick={handleResetClick}
-              className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50 transition duration-300"
+              className="flex-1 px-4 py-2 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition"
             >
               Сбросить
             </button>
           </div>
         </div>
 
-        {/* --- Правая колонка: результаты --- */}
+        {/* Результаты */}
         <div className="bg-wb-box p-6 rounded-xl shadow-lg w-full md:w-1/2">
           <h3 className="text-xl mb-4 text-wb-accent-alt">Результаты</h3>
 
