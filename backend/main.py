@@ -48,7 +48,7 @@ async def spa_fallback(full_path: str):
         return FileResponse(local_index, media_type="text/html")
 
     # Nothing found — return 404 so API clients still get proper response
-    raise HTTPException(status_code=404, detail="Not Found")
+    raise HTTPException(status_code=404, detail="Frontend not found")
 # def get_db():
 #     db = SessionLocal()
 #     try:
